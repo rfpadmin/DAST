@@ -12,5 +12,6 @@ phases:
     
   post_build:
     commands:
+      - docker pull owasp/zap2docker-stable
       - docker run --net zapnet -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-full-scan.py -I -j -m 10 -T 60 -t http://ab8ecdb44a07e45cca1762a090b1e15f-1198928900.ap-south-1.elb.amazonaws.com -r 20210417-zap-full-scan-without-user.html
       
