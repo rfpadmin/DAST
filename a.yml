@@ -6,7 +6,6 @@ phases:
 
   install:
     commands:
-      - pip install archerysec-cli --force  
       - echo $(PWD)
 
     
@@ -14,3 +13,4 @@ phases:
     commands:
       - docker pull owasp/zap2docker-stable
       - docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-full-scan.py -t "https://www.example.com" -g gen.conf -r testreport.html
+      - ls
