@@ -12,9 +12,7 @@ phases:
     
   post_build:
     commands:
-      - archerysec-cli -h http://43.204.141.215:8000 -t R-s0tnzYSH9-8eBrIwkWKF6Qa1Kakgcebinkr2RunsFiRpO8rst5lRTjoy0E4YJq --cicd_id=0106b7d1-bcab-4e5f-8720-ceefc1704dc1 --project=afdec9b6-b571-4957-a39a-a10fcf60c13c --zap-full-scan --report_path=$(pwd)
-      - ls
-      
+      - archerysec-cli -h http://43.204.141.215:8000 -t R-s0tnzYSH9-8eBrIwkWKF6Qa1Kakgcebinkr2RunsFiRpO8rst5lRTjoy0E4YJq --cicd_id=521bc3e8-d0de-4385-bd98-75379ce903d5 --project=afdec9b6-b571-4957-a39a-a10fcf60c13c --zap-base-line-scan --report_path=$(pwd)
       
       
   
