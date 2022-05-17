@@ -2,11 +2,10 @@
 ##SPDX-License-Identifier: MIT-0
 version: 0.2
 phases:
-  post_build:
-     - [[ $CODEBUILD_BUILD_SUCCEEDING != 0 ]] && exit 255 || echo "post_build execution continues"
-     - docker run -v /tmp/:/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py -t https://www.example.com -r report.html
-     - [[ $CODEBUILD_BUILD_SUCCEEDING != 0 ]] && exit 255 || echo "post_build execution continues"
-     - ls /tmp
+  install:
+    command:
+      - docker run -v /tmp/:/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py -t https://www.example.com -r report.html > > /usr/local/bin/ok; echo 'if [[ "$CODEBUILD_BUILD_SUCCEEDING" == "0" ]]; then exit 1; else exit 0; fi' >> /usr/local/bin/ok; chmod +x /usr/local/bin/ok
+      - ls /tmp
   
 artifacts:
   type: zip
