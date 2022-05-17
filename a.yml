@@ -17,6 +17,6 @@ phases:
     commands:
       #- nuclei -u www.example.com > a.txt
       - docker pull owasp/zap2docker-stable
-      - docker run -i owasp/zap2docker-stable zap.sh -daemon -quickurl https://codesecure.in -quickout /tmp/zap.html -quickprogres
+      - docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py  -t https://www.example.com -g gen.conf -r testreport.html
       - ls /tmp
       - ls
