@@ -1,19 +1,15 @@
-##Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-##SPDX-License-Identifier: MIT-0
 version: 0.2
+
 phases:
-  install:
-    command:
-      - docker pull owasp/zap2docker-stable
-  PRE_BUILD:
+  pre_build:
     commands:
       - docker pull owasp/zap2docker-stable
       - docker run -v /tmp/:/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py -t https://www.example.com -r reports.html > /dev/null 2>&1  
       - ls /tmp
-   POST_BUILD:
+  post_build:
     commands:
       - ls
       - ls /tmp
-      
 artifacts:
-  files: /tmp/reports.html
+  files:
+    - tmp/reports.html
