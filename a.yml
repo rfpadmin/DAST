@@ -12,7 +12,6 @@ phases:
       #- mv nuclei /bin/
       #- chmod +x /bin/nuclei
       - docker run -d -u zap -p 8090:8090 -i owasp/zap2docker-stable zap.sh -daemon -port 8090 -host 0.0.0.0 -config api.key=jamesbond -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true 
-      - 
  pre_build:
     commands:
       - scanid=$(curl "$OwaspZapURL/JSON/ascan/action/scan/?apikey=$OwaspZapApiKey&recurse=true&inScopeOnly=&scanPolicyName=&method=&postData=&contextId=&url=$ApplicationURL" | jq -r '.scan')
