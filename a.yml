@@ -1,19 +1,13 @@
-
+##Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+##SPDX-License-Identifier: MIT-0
 version: 0.2
-run-as: root
-
 phases:
-
   install:
     commands:
-      - echo $(PWD)
-      #- wget https://github.com/projectdiscovery/nuclei/releases/download/v2.7.0/nuclei_2.7.0_linux_amd64.zip
-      #- unzip nuclei_2.7.0_linux_amd64.zip 
-      #- mv nuclei /bin/
-      #- chmod +x /bin/nuclei
-      - docker run -d -u zap -p 8090:8090 -i owasp/zap2docker-stable zap.sh -daemon -port 8090 -host 0.0.0.0 -config api.key=jamesbond -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true 
- pre_build:
+      - echo "install phase....."
+  pre_build:
     commands:
+      - docker run -u zap -p 8090:8090 -i owasp/zap2docker-stable zap.sh -daemon -port 8090 -host 0.0.0.0  -config api.key=jamesbond -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true 
       - scanid=$(curl "$OwaspZapURL/JSON/ascan/action/scan/?apikey=$OwaspZapApiKey&recurse=true&inScopeOnly=&scanPolicyName=&method=&postData=&contextId=&url=$ApplicationURL" | jq -r '.scan')
       - echo "scan id is " $scanid
       - |
@@ -41,7 +35,8 @@ phases:
         \"build_id\": env.CODEBUILD_BUILD_ID, \
         \"source_commitid\": env.CODEBUILD_RESOLVED_SOURCE_VERSION, \
         \"report\": . }" zap-scan-results.json > payload.json
-       - if [ $high_alerts != 0 ] || [ $medium_alerts != 0 ]; then echo "there are high or medium alerts.. failing the build" && exit 1; else exit 0; fi
+        aws lambda invoke --function-name ImpToSecurityHubEKS --payload file://payload.json owaspzap_scan_report.json && echo "LAMBDA_SUCCEDED" || echo "LAMBDA_FAILED";
+      - if [ $high_alerts != 0 ] || [ $medium_alerts != 0 ]; then echo "there are high or medium alerts.. failing the build" && exit 1; else exit 0; fi
 artifacts:
   type: zip
   files: '**/*'
