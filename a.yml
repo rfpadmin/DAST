@@ -4,9 +4,10 @@ version: 0.2
 phases:
   install:
     command:
-      - docker run -v /tmp/:/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py -t https://www.example.com -r reports.html > /dev/null 2>&1  
+      - docker pull owasp/zap2docker-stable
   post_build:
     commands:
+      - docker run -v /tmp/:/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py -t https://www.example.com -r reports.html > /dev/null 2>&1  
       - ls /tmp
       - ls
 artifacts:
