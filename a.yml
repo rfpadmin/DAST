@@ -4,7 +4,7 @@ version: 0.2
 phases:
   install:
     commands:
-      - docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py -t https://api-endpoint -r report.html
+      - docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py -t https://www.example.com -r report.html
   
 artifacts:
   type: zip
