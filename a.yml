@@ -11,13 +11,38 @@ phases:
       #- unzip nuclei_2.7.0_linux_amd64.zip 
       #- mv nuclei /bin/
       #- chmod +x /bin/nuclei
-      - docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py  -t https://www.example.com -g gen.conf -r testreport.html > as.txt
-
-    
+      - docker run -d -u zap -p 8090:8090 -i owasp/zap2docker-stable zap.sh -daemon -port 8090 -host 0.0.0.0 -config api.key=jamesbond -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true 
+      - 
+ pre_build:
+    commands:
+      - scanid=$(curl "$OwaspZapURL/JSON/ascan/action/scan/?apikey=$OwaspZapApiKey&recurse=true&inScopeOnly=&scanPolicyName=&method=&postData=&contextId=&url=$ApplicationURL" | jq -r '.scan')
+      - echo "scan id is " $scanid
+      - |
+        stat=50;
+        while [ "$stat" != 100 ]; do
+          stat=$(curl "$OwaspZapURL/JSON/ascan/view/status/?apikey=$OwaspZapApiKey&scanId=$scanid" | jq -r '.status');
+          echo "OWASP ZAP scan status is $stat"
+          echo "OWASP Zap analysis status is in progress...";
+          sleep 5;
+        done
+        echo "OWASP Zap analysis status is completed..."; 
+      - high_alerts=$(curl "$OwaspZapURL/JSON/alert/view/alertsSummary/?apikey=$OwaspZapApiKey&baseurl=$ApplicationURL" | jq -r '.alertsSummary.High')
+      - medium_alerts=$(curl "$OwaspZapURL/JSON/alert/view/alertsSummary/?apikey=$OwaspZapApiKey&baseurl=$ApplicationURL" | jq -r '.alertsSummary.Meduim')
+      - echo "high alerts are $high_alerts"    
+  build:
+    commands: 
+      - curl "$OwaspZapURL/OTHER/core/other/jsonreport/?apikey=$OwaspZapApiKey" | jq . > zap-scan-results.json
+      - echo "build stage completed"
   post_build:
     commands:
-      #- nuclei -u www.example.com > a.txt
-      - docker pull owasp/zap2docker-stable
-      - docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py  -t https://www.example.com -g gen.conf -r testreport.html
-      - ls /tmp
-      - ls
+      - | 
+        jq "{ \"messageType\": \"CodeScanReport\", \"reportType\": \"OWASP-Zap\", \
+        \"createdAt\": $(date +\"%Y-%m-%dT%H:%M:%S.%3NZ\"), \"source_repository\": env.CODEBUILD_SOURCE_REPO_URL, \
+        \"source_branch\": env.CODEBUILD_SOURCE_VERSION, \
+        \"build_id\": env.CODEBUILD_BUILD_ID, \
+        \"source_commitid\": env.CODEBUILD_RESOLVED_SOURCE_VERSION, \
+        \"report\": . }" zap-scan-results.json > payload.json
+       - if [ $high_alerts != 0 ] || [ $medium_alerts != 0 ]; then echo "there are high or medium alerts.. failing the build" && exit 1; else exit 0; fi
+artifacts:
+  type: zip
+  files: '**/*'
