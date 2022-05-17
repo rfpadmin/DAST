@@ -5,11 +5,16 @@ phases:
   install:
     command:
       - docker pull owasp/zap2docker-stable
-  post_build:
+  PRE_BUILD:
     commands:
       - docker pull owasp/zap2docker-stable
       - docker run -v /tmp/:/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py -t https://www.example.com -r reports.html > /dev/null 2>&1  
       - ls /tmp
       - ls
+   POST_BUILD:
+    commands:
+      - ls
+      - ls /tmp
+      
 artifacts:
   files: /tmp/reports.html
